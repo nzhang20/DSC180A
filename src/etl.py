@@ -2,7 +2,6 @@
 etl.py contains functions used to merge and clean the two raw dataframes
 '''
 
-
 def merge_gut_subject():
     '''
     Merges the gut microbes dataset and subject info dataset on SubjectID. 
@@ -27,3 +26,5 @@ def get_genus_and_covariates(df, genus, covariates):
     '''
     X = df.loc[:, genus + covariates]
     return(X)
+
+# TODO: add function to separate IR and IS groups in df

@@ -44,3 +44,16 @@ def run_ges(data, fp):
     pyd.write_png(f"{fp}.png")
     
     return
+
+def run_fci(data, fp):
+    '''
+    Run FCI on the data and save the plot of the resulting causal graph.
+    
+    :param: data: dataframe to run FCI on
+    :param: fp: filepath name of causal graph result file 
+    '''
+    data_array = np.array(data)
+    g, edges = fci(data_array)
+
+    pdy = GraphUtils.to_pydot(g, labels=data.columns)
+    pdy.write_png(f"{fp}.png")
