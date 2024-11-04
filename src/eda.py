@@ -95,3 +95,21 @@ def corr_IR_IS(data):
     ax.set_yticklabels(full_columns)
 
     fig.show()
+
+def check_merged_discrete(data):
+    X = clean_merged_df(data)
+    fig, axs = plt.subplots(255, 5, figsize=(20, 700))
+    fig.suptitle('Distribution of Discrete Variables in Subject Info Data')
+
+    pairs_X = list(itertools.combinations(X.columns, 2))
+
+    axs = axs.ravel()
+
+    for i in range(len(pairs_X)):
+        x = pairs_X[i][0]
+        y = pairs_X[i][1]
+        axs[i].scatter(x = X[x], y = X[y])
+        axs[i].set_xlabel(x)
+        axs[i].set_ylabel(y)
+        
+    fig.subplots_adjust(top=0.975, wspace=0.2, hspace=0.15)
