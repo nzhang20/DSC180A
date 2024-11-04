@@ -11,7 +11,10 @@ def main(targets):
     if "data" in targets:
         with open("config/data-params.json") as fh:
             data_params = json.load(fh)
-        get_genus_and_covariates(merge_gut_subject(), **data_params)
+        get_bacteria_and_covariates(merge_gut_subject(), **data_params)
+
+    if "eda" in targets:
+        # make corr plots, scatter plots, qq plots
         
     if "graph" in targets:
         data = pd.read_csv("data/clean.csv")

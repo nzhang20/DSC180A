@@ -1,0 +1,8 @@
+{
+	"phylum": [],
+	"class": [],
+	"order": [],
+	"family": [],
+	"genus": ["genus_Akkermansia", "genus_Alistipes", "genus_Anaerotruncus", "genus_Anaerovorax", "genus_Bacteroides", "genus_Barnesiella", "genus_Bilophila", "genus_Blautia", "genus_Butyricicoccus", "genus_Butyricimonas", "genus_Clostridium.IV", "genus_Clostridium.XI", "genus_Clostridium.XVIII", "genus_Clostridium.XlVa", "genus_Clostridium.XlVb", "genus_Clostridium.sensu.stricto", "genus_Collinsella", "genus_Coprococcus", "genus_Dorea", "genus_Eggerthella", "genus_Erysipelotrichaceae_incertae_sedis", "genus_Faecalibacterium", "genus_Flavonifractor", "genus_Holdemania", "genus_Lachnospiracea_incertae_sedis", "genus_Odoribacter", "genus_Oscillibacter", "genus_Parabacteroides", "genus_Parasutterella", "genus_Phascolarctobacterium", "genus_Prevotella", "genus_Pseudoflavonifractor", "genus_Roseburia", "genus_Ruminococcus", "genus_Streptococcus", "genus_Veillonella", "genus_unclassified_Bacteria", "genus_unclassified_Clostridiales", "genus_unclassified_Clostridiales_Incertae.Sedis.XIII", "genus_unclassified_Coriobacteriaceae", "genus_unclassified_Erysipelotrichaceae", "genus_unclassified_Firmicutes", "genus_unclassified_Lachnospiraceae", "genus_unclassified_Porphyromonadaceae", "genus_unclassified_Ruminococcaceae"],
+	"covariates": ["Race", "Sex", "Age", "BMI", "SSPG", "IR_IS_classification"]
+}
