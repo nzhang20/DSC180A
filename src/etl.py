@@ -2,6 +2,21 @@
 etl.py contains functions used to merge and clean the two raw dataframes
 '''
 
+def get_subject_data():
+    '''
+    Returns the subject info dataset. 
+    '''
+    subject_info = pd.read_csv("data/raw/subject_file.csv")
+    return subject_info
+
+def get_gut_data():
+    '''
+    Returns the gut microbe dataset. 
+    '''
+    gut_microbes = pd.read_csv("data/raw/gut_16s_abundance.txt", sep="\t")
+    gut_microbes["SubjectID"] = gut_microbes["SampleID"].str.split("-").str[0]
+    return gut_microbes
+
 def merge_gut_subject():
     '''
     Merges the gut microbes dataset and subject info dataset on SubjectID. 
@@ -36,11 +51,13 @@ def get_bacteria_and_covariates(df, fp = "data/clean.csv", **columns):
     return
 
 
-# def IR_IS_classify(df):
-#     '''
-#     Returns two dataframes where each is separated by the IR_IS_classification column.
+def IR_IS_classify(df):
+    '''
+    Returns two dataframes where each is separated by the IR_IS_classification column.
 
-#     :param: df: dataframe containing all individuals and the 'IR_IS_classification' column
-#     '''
-
-# # TODO: add function to separate IR and IS groups in df
+    :param: df: dataframe containing all individuals and the 'IR_IS_classification' column
+    '''
+    IR_df = df[df['IR_IS_classification'] == 'IR']  # Insulin-resistant group
+    IS_df = df[df['IR_IS_classification'] == 'IS']  # Insulin-sensitive group
+    
+    return IR_df, IS_df
