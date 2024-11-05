@@ -2,7 +2,8 @@
 eda.py contains functions used to explore the linearity, Gaussianity, and correlation of variables in the cleaned dataframe
 '''
 
-# subject info graphs
+##### subject info graphs
+
 
 def check_discrete_distribution(data):
     fig, axs = plt.subplots(2, 2, figsize=(15, 15))
@@ -39,8 +40,6 @@ def check_gaussian_distribution(data):
     plt.show()
 
 
-
-
 def check_linearity(data):
     fig, axs = plt.subplots(1, 3, figsize=(15, 10))
     fig.suptitle('Linearity of Continuous Variables in Subject Info Data')
@@ -55,7 +54,9 @@ def check_linearity(data):
         axs[i].set_xlabel(pairs[i][0])
         axs[i].set_ylabel(pairs[i][1])
 
-# for merged data
+        
+##### for merged data
+
 
 def clean_merged_df(data):
     X = merged_df.drop(columns=['SampleID', 'SubjectID', 'Study'])
@@ -63,6 +64,35 @@ def clean_merged_df(data):
     X['Sex'] = X['Sex'].map({'M': 0, 'F': 1})
     X['IR_IS_classification'] = X['IR_IS_classification'].map({'IR': 0, 'IS': 1, 'Unknown': 2})
     return X
+    
+
+def make_corr_plot(data, fp):
+    '''
+    Create a labeled correlation matrix of the columns in the dataframe. 
+    
+    :param: data: dataframe of columns to compute the correlation matrix of
+    :param: fp: filepath name of correlation matrix plot file (pdf for vectorized)
+    '''
+    corr = data.corr()
+    full_columns = list(data.columns)
+    
+    fig = plt.figure(figsize=(20, 20))
+    ax = fig.add_subplot()
+    cax = ax.matshow(corr)
+    fig.colorbar(cax)
+
+    xaxis = np.arange(len(full_columns))
+    ax.set_xticks(xaxis)
+    ax.set_yticks(xaxis)
+    ax.set_xticklabels(full_columns, rotation=90)
+    ax.set_yticklabels(full_columns)
+    ax.set_title("Correlation Matrix")
+
+    fig.savefig(f"{fp}.pdf")
+    plt.close(fig)
+
+    return
+
 
 def check_corr_plot(data, IR_IS=false):
     
@@ -74,6 +104,7 @@ def check_corr_plot(data, IR_IS=false):
         make_corr_plot(X_IS)
     make_corr_plot(X)
 
+    
 def corr_IR_IS(data):
     X = clean_merged_df(data)
     X_IR = X[X['IR_IS_classification'] == 0]
@@ -95,6 +126,7 @@ def corr_IR_IS(data):
     ax.set_yticklabels(full_columns)
 
     fig.show()
+
 
 def check_merged_discrete(data):
     X = clean_merged_df(data)
