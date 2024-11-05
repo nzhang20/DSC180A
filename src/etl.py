@@ -21,8 +21,10 @@ def get_bacteria_and_covariates(df, fp = "data/clean.csv", **columns):
     Returns a dataframe of the selected bacteria by taxa and covariates. 
     
     :param: df: merged dataset containing microbes and subject info
-    :param: columns: one or more lists of specific phylum/class/order/family/genus bacteria and covariates
+    :param: columns: one or more lists of specific phylum/class/order/family/genus bacteria and covariates (must include IR_IS_classification)
     '''
+    # try catch for IR_IS_classification in columns
+    
     all_columns = []
     
     for val in columns.values():
@@ -30,14 +32,15 @@ def get_bacteria_and_covariates(df, fp = "data/clean.csv", **columns):
         
     X = df.loc[:, all_columns]
     X.to_csv(fp)
-    return(X)
+
+    return
 
 
-def IR_IS_classify(df):
-    '''
-    Returns two dataframes where each is separated by the IR_IS_classification column.
+# def IR_IS_classify(df):
+#     '''
+#     Returns two dataframes where each is separated by the IR_IS_classification column.
 
-    :param: df: dataframe containing all individuals and the 'IR_IS_classification' column
-    '''
+#     :param: df: dataframe containing all individuals and the 'IR_IS_classification' column
+#     '''
 
-# TODO: add function to separate IR and IS groups in df
+# # TODO: add function to separate IR and IS groups in df
