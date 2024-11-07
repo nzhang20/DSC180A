@@ -1,6 +1,8 @@
 '''
 etl.py contains functions used to merge and clean the two raw dataframes
 '''
+import pandas as pd
+
 
 def get_subject_data():
     '''

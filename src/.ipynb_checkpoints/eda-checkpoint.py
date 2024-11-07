@@ -1,6 +1,11 @@
 '''
 eda.py contains functions used to explore the linearity, Gaussianity, and correlation of variables in the cleaned dataframe
 '''
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import pylab as py
+import itertools
 
 ##### subject info graphs
 
@@ -43,6 +48,7 @@ def check_gaussian_distribution(data):
 def check_linearity(data):
     fig, axs = plt.subplots(1, 3, figsize=(15, 10))
     fig.suptitle('Linearity of Continuous Variables in Subject Info Data')
+    continuous_var = ['Age', 'BMI', 'SSPG']
     pairs = list(itertools.combinations(continuous_var, 2))
     colors = {'IR': 'red', 'IS': 'green', 'Unknown': 'blue'}
 
@@ -94,10 +100,10 @@ def make_corr_plot(data, fp):
     return
 
 
-def check_corr_plot(data, IR_IS=false):
+def check_corr_plot(data, IR_IS=False):
     
     X = clean_merged_df(data)
-    if IR_IS = true:
+    if IR_IS == true:
         X_IR = X[X['IR_IS_classification'] == 0]
         X_IS = X[X['IR_IS_classification'] == 1]
         make_corr_plot(X_IR)
