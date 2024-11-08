@@ -27,59 +27,63 @@ def main(targets):
     if "data" in targets:
         with open("config/data-params.json") as fh:
             data_params = json.load(fh)
-        get_bacteria_and_covariates(merge_gut_subject(), **data_params)
+        get_bacteria_and_covariates(merge_gut_sample_subject(), **data_params)
 
     if "eda" in targets:
-        # subject info dataset
+        # subject data eda
         subject_df = get_subject_data()
-        # merged dataset
-        merge_df = merge_gut_subject()
 
         check_discrete_distribution(subject_df)
         check_gaussian_distribution(subject_df)
         check_linearity(subject_df)
 
-        # clean merged data and generate correlation plots
-        X_clean = clean_merged_df(merge_df)
-        make_corr_plot(X_clean, "plots/merged_corr_plot")
+        # clean dataset
+        data = pd.read_csv("data/clean.csv")
+
+        # numerically encode the clean dataset for correlation plots
+        clean_num = numerical_encoding(data)
+        make_corr_plot(corr(clean_num), "full_data_corr_plot")
         
         # optionally check correlation differences between IR and IS groups
-        corr_IR_IS(merge_df)
-
-        # run check_corr_plot with IR/IS group analysis if specified
-        check_corr_plot(merge_df, IR_IS=True)
+        IR_clean_num, IS_clean_num = IR_IS_split(clean_num, True)
+        make_corr_plot(corr(IR_clean_num), "IR_data_corr_plot")
+        make_corr_plot(corr(IS_clean_num), "IS_data_corr_plot")
+        make_corr_plot(corr(IR_clean_num) - corr(IS_clean_num), "IR_IS_diff_corr_plot", "Difference-in-Correlation Matrix")
         
-        # check distributions of discrete variables in merged data
-        check_merged_discrete(merge_df)
+        # check linearity of all variables (includes bacteria, numerical covariates)
+        check_all = input(f"Would you like to generate {len(list(itertools.combinations(clean_num.columns, 2)))} scatter plots to check for linearity in {len(clean_num.columns)} variables? (This may take a while.) \n(Y/[N]): ")
+        if check_all.lower() == 'y':
+            check_linearity_large(clean_num)
 
     
     if "graph" in targets:
-        data = merge_gut_subject()
-        IR, IS = IR_IS_classify(data)
+        data = pd.read_csv("data/clean.csv")
+        data = numerical_encoding(data)
+        IR, IS = IR_IS_split(data, True)
        
         # PC is slow with KCI, waiting on Fast KCI
-        # run_pc(data, "graphs/pc_causal_graph", indep_test="kci")
-        # run_pc(IR, "graph/pc_IR_causal_graph", indep_test="kci")
-        # run_pc(IS, "graph/pc_IS_causal_graph", indep_test="kci")
+        # run_pc(data, "graphs/pc_causal_graph", indep_test="fastkci")
+        # run_pc(IR, "graph/pc_IR_causal_graph", indep_test="fastkci")
+        # run_pc(IS, "graph/pc_IS_causal_graph", indep_test="fastkci")
         
-        run_fci(data, "graphs/fci_causal_graph")
-        run_fci(IR, "graphs/fci_IR_causal_graph")
-        run_fci(IS, "graphs/fci_IS_causal_graph")
-        
-        run_ges(data, "graphs/ges_causal_graph")
-        run_ges(IR, "graphs/ges_IR_causal_graph")
-        run_ges(IS, "graphs/ges_IS_causal_graph")
+        run_fci(data, "fci_causal_graph")
+        run_fci(IR, "fci_IR_causal_graph")
+        run_fci(IS, "fci_IS_causal_graph")
+
+        # ges slow
+        # run_ges(data, "graphs/ges_causal_graph")
+        # run_ges(IR, "graphs/ges_IR_causal_graph")
+        # run_ges(IS, "graphs/ges_IS_causal_graph")
         
     if "clean" in targets:
         for f in glob.glob("data/*.csv"):
             os.remove(f)
         for f in glob.glob("plots/*.png"):
             os.remove(f)
-        for f in glob.glob("graphs/"):
+        for f in glob.glob("graphs/*.png"):
             os.remove(f)
         
     
-
 if __name__ == '__main__':
     targets = sys.argv[1:]
     if "all" in targets:

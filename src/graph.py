@@ -2,8 +2,10 @@
 graph.py contains functions used to run causal discovery algorithms on the cleaned dataset
 '''
 
+import numpy as np
+import pydot
 from causallearn.search.ConstraintBased.PC import pc
-from causallearn.utils.cit import kci
+from causallearn.utils.cit import fastkci
 from causallearn.search.ConstraintBased.FCI import fci
 from causallearn.search.ScoreBased.GES import ges
 from causallearn.utils.GraphUtils import GraphUtils
@@ -20,7 +22,7 @@ def run_pc(data, fp, indep_test):
     cg = pc(data.values, alpha=0.05, indep_test=indep_test)
 
     pyd = GraphUtils.to_pydot(cg.G)
-    pyd.write_png(f"{fp}.png")
+    pyd.write_png(f"graphs/{fp}.png")
 
 
 def run_fci(data, fp):
@@ -30,11 +32,10 @@ def run_fci(data, fp):
     :param: data: dataframe to run FCI on
     :param: fp: filepath name of causal graph result file 
     '''
-    data_array = np.array(data)
-    g, edges = fci(data_array)
+    g, edges = fci(data.values)
 
     pyd = GraphUtils.to_pydot(g, labels=data.columns)
-    pyd.write_png(f"{fp}.png")
+    pyd.write_png(f"graphs/{fp}.png")
 
 
 def run_ges(data, fp):
@@ -47,6 +48,6 @@ def run_ges(data, fp):
     Record = ges(data.values)
     
     pyd = GraphUtils.to_pydot(Record["G"], labels=data.columns)
-    pyd.write_png(f"{fp}.png")
+    pyd.write_png(f"graphs/{fp}.png")
     
     return

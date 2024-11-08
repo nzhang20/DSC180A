@@ -1,6 +1,7 @@
 '''
 etl.py contains functions used to merge and clean the two raw dataframes
 '''
+
 import pandas as pd
 
 
@@ -8,29 +9,49 @@ def get_subject_data():
     '''
     Returns the subject info dataset. 
     '''
-    subject_info = pd.read_csv("data/raw/subject_file.csv")
-    return subject_info
+    subjects = pd.read_csv("data/raw/S1_Subjects.csv")
+    subjects_IRIS_known = subjects[subjects["IRIS"] != "Unknown"]
+    return subjects_IRIS_known
+
+
+def get_sample_data():
+    '''
+    Returns the sample info dataset.
+    '''
+    samplelist = pd.read_csv("data/raw/S3_SampleList.csv")
+    return samplelist
+    
 
 def get_gut_data():
     '''
     Returns the gut microbe dataset. 
     '''
     gut_microbes = pd.read_csv("data/raw/gut_16s_abundance.txt", sep="\t")
-    gut_microbes["SubjectID"] = gut_microbes["SampleID"].str.split("-").str[0]
     return gut_microbes
 
-def merge_gut_subject():
+
+def clean_sample_data(samplelist):
     '''
-    Merges the gut microbes dataset and subject info dataset on SubjectID. 
+    Returns the sample info dataset for samples where gut microbe data were collected and the sample was a healthy visit. 
+
+    :param: samplelist: samplelist raw dataset
     '''
-    gut_microbes = pd.read_csv("data/raw/gut_16s_abundance.txt", sep="\t")
-    subject_info = pd.read_csv("data/raw/subject_file.csv")
+    if ("Gut_16S" not in samplelist.columns) and ("CL4" not in samplelist.columns):
+        raise Exception("Gut_16S (gut microbe test) and CL4 (IR IS classification) are not in the columns of samplelist.")
+        
+    samplelist_gut_healthy = samplelist[(samplelist["Gut_16S"] == 1) & (samplelist["CL4"] == "Healthy")]
+    return samplelist_gut_healthy
     
-    gut_microbes["SubjectID"] = gut_microbes["SampleID"].str.split("-").str[0]
+
+def merge_gut_sample_subject():
+    '''
+    Merges the gut microbes dataset and samplelist dataset on SampleID. 
+    Merges the result of the previous merge with the subject info dataset on SubjectID. 
+    '''
+    merged_df = pd.merge(get_gut_data(), clean_sample_data(get_sample_data()), on="SampleID", how="inner")
+    merged_df = pd.merge(merged_df, get_subject_data(), on="SubjectID", how="inner")
     
-    merged_df = pd.merge(gut_microbes, subject_info, on="SubjectID", how="inner")
-    
-    return(merged_df)
+    return merged_df
 
 
 def get_bacteria_and_covariates(df, fp = "data/clean.csv", **columns):
@@ -40,26 +61,36 @@ def get_bacteria_and_covariates(df, fp = "data/clean.csv", **columns):
     :param: df: merged dataset containing microbes and subject info
     :param: columns: one or more lists of specific phylum/class/order/family/genus bacteria and covariates (must include IR_IS_classification)
     '''
-    # try catch for IR_IS_classification in columns
-    
     all_columns = []
     
     for val in columns.values():
         all_columns += val
         
     X = df.loc[:, all_columns]
-    X.to_csv(fp)
+    X.to_csv(fp, index=False)
 
     return
 
 
-def IR_IS_classify(df):
+def IR_IS_split(df, numerical=False):
     '''
-    Returns two dataframes where each is separated by the IR_IS_classification column.
+    Returns two dataframes where each is separated by the IRIS column.
 
-    :param: df: dataframe containing all individuals and the 'IR_IS_classification' column
+    :param: df: dataframe containing all individuals and the 'IRIS' column
     '''
-    IR_df = df[df['IR_IS_classification'] == 'IR']  # Insulin-resistant group
-    IS_df = df[df['IR_IS_classification'] == 'IS']  # Insulin-sensitive group
+    if "IRIS" not in df.columns:
+        raise Exception("IRIS is not in the columns of df.")
+
+    if numerical:
+        IR_df = df[df['IRIS'] == 0]  # Insulin-resistant group
+        IS_df = df[df['IRIS'] == 1]  # Insulin-sensitive group
+
+    else:
+        IR_df = df[df['IRIS'] == 'IR']
+        IS_df = df[df['IRIS'] == 'IS']
+
+    IR_df = IR_df.drop(columns='IRIS')
+    IS_df = IS_df.drop(columns='IRIS')
     
     return IR_df, IS_df
+
