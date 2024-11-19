@@ -11,6 +11,7 @@ import itertools
 import glob, os
 from causallearn.search.ConstraintBased.FCI import fci
 from causallearn.search.ConstraintBased.PC import pc
+from causallearn.utils.cit import fastkci
 from causallearn.utils.GraphUtils import GraphUtils
 from causallearn.utils.PCUtils.BackgroundKnowledge import BackgroundKnowledge
 from causallearn.graph.GraphNode import GraphNode
@@ -60,20 +61,40 @@ def main(targets):
         data = pd.read_csv("data/clean.csv")
         data = numerical_encoding(data)
         IR, IS = IR_IS_split(data, True)
-       
-        # PC is slow with KCI, waiting on Fast KCI
-        # run_pc(data, "graphs/pc_causal_graph", indep_test="fastkci")
-        # run_pc(IR, "graph/pc_IR_causal_graph", indep_test="fastkci")
-        # run_pc(IS, "graph/pc_IS_causal_graph", indep_test="fastkci")
-        
-        run_fci(data, "fci_causal_graph")
-        run_fci(IR, "fci_IR_causal_graph")
-        run_fci(IS, "fci_IS_causal_graph")
+        non_genera = ["Ethnicity", "Gender", "Adj.age", "BMI", "SSPG"]
 
-        # ges slow
+        # GES with genera + covariates
         # run_ges(data, "graphs/ges_causal_graph")
         # run_ges(IR, "graphs/ges_IR_causal_graph")
         # run_ges(IS, "graphs/ges_IS_causal_graph")
+        
+        # GES with genera only
+        # run_ges(data.drop(columns=non_genera + ["IRIS"]), "ges_genera_causal_graph")
+        run_ges(IR.drop(columns=non_genera), "ges_IR_genera_causal_graph")
+        run_ges(IS.drop(columns=non_genera), "ges_IS_genera_causal_graph")
+        
+        # PC with genera only 
+        # run_pc(data.drop(columns=non_genera + ["IRIS"]), "pc_genera_causal_graph", indep_test=fastkci)
+        try: 
+            run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=fastkci)
+            run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=fastkci)
+        except ValueError:
+            run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=kci)
+            run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=kci)
+        
+        # FCI with genera + covariates
+        # run_fci(data, "fci_causal_graph")
+        # run_fci(IR, "fci_IR_causal_graph")
+        # run_fci(IS, "fci_IS_causal_graph")
+        
+        # FCI with genera only
+        # run_fci(data.drop(columns=non_genera + ["IRIS"]), "fci_genera_causal_graph")
+        run_fci(IR.drop(columns=non_genera), "fci_IR_genera_causal_graph")
+        run_fci(IS.drop(columns=non_genera), "fci_IS_genera_causal_graph")
+
+        # our algorithm
+
+        # GraphicalLASSO + PC
         
     if "clean" in targets:
         for f in glob.glob("data/*.csv"):

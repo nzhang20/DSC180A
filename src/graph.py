@@ -21,7 +21,7 @@ def run_pc(data, fp, indep_test):
     '''
     cg = pc(data.values, alpha=0.05, indep_test=indep_test)
 
-    pyd = GraphUtils.to_pydot(cg.G)
+    pyd = GraphUtils.to_pydot(cg.G, labels=data.columns)
     pyd.write_png(f"graphs/{fp}.png")
 
 
@@ -32,7 +32,7 @@ def run_fci(data, fp):
     :param: data: dataframe to run FCI on
     :param: fp: filepath name of causal graph result file 
     '''
-    g, edges = fci(data.values)
+    g, edges = fci(data.values, independence_test_method="fisherz")
 
     pyd = GraphUtils.to_pydot(g, labels=data.columns)
     pyd.write_png(f"graphs/{fp}.png")
@@ -50,4 +50,14 @@ def run_ges(data, fp):
     pyd = GraphUtils.to_pydot(Record["G"], labels=data.columns)
     pyd.write_png(f"graphs/{fp}.png")
     
+    return
+
+
+def run_ouralg(data, fp):
+    '''
+    Run our algorithm on the data and save the plot of the resulting causal graph. The methodology can be found in the associated paper. 
+
+    :param: data: dataframe to run our algorithm on
+    :param: fp: filepath name of causal graph result file
+    '''
     return
