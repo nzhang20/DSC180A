@@ -11,7 +11,7 @@ import itertools
 import glob, os
 from causallearn.search.ConstraintBased.FCI import fci
 from causallearn.search.ConstraintBased.PC import pc
-from causallearn.utils.cit import fastkci
+from causallearn.utils.cit import kci, fastkci
 from causallearn.utils.GraphUtils import GraphUtils
 from causallearn.utils.PCUtils.BackgroundKnowledge import BackgroundKnowledge
 from causallearn.graph.GraphNode import GraphNode
@@ -70,17 +70,17 @@ def main(targets):
         
         # GES with genera only
         # run_ges(data.drop(columns=non_genera + ["IRIS"]), "ges_genera_causal_graph")
-        run_ges(IR.drop(columns=non_genera), "ges_IR_genera_causal_graph")
-        run_ges(IS.drop(columns=non_genera), "ges_IS_genera_causal_graph")
+        # run_ges(IR.drop(columns=non_genera), "ges_IR_genera_causal_graph")
+        # run_ges(IS.drop(columns=non_genera), "ges_IS_genera_causal_graph")
         
         # PC with genera only 
         # run_pc(data.drop(columns=non_genera + ["IRIS"]), "pc_genera_causal_graph", indep_test=fastkci)
-        try: 
-            run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=fastkci)
-            run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=fastkci)
-        except ValueError:
-            run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=kci)
-            run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=kci)
+        # try: 
+        #     run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=fastkci)
+        #     run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=fastkci)
+        # except ValueError:
+        #     run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=kci)
+        #     run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=kci)
         
         # FCI with genera + covariates
         # run_fci(data, "fci_causal_graph")
@@ -89,10 +89,28 @@ def main(targets):
         
         # FCI with genera only
         # run_fci(data.drop(columns=non_genera + ["IRIS"]), "fci_genera_causal_graph")
-        run_fci(IR.drop(columns=non_genera), "fci_IR_genera_causal_graph")
-        run_fci(IS.drop(columns=non_genera), "fci_IS_genera_causal_graph")
+        # run_fci(IR.drop(columns=non_genera), "fci_IR_genera_causal_graph")
+        # run_fci(IS.drop(columns=non_genera), "fci_IS_genera_causal_graph")
 
         # our algorithm
+        with open("config/data-params.json") as fh:
+            data_params = json.load(fh)
+
+        genus_lst = data_params["genus"]
+
+        sparcc_data = pd.read_csv("data/raw/sparcc.csv")
+        rmcorr_data = pd.read_csv("data/raw/rmcorr.csv")
+        matrix_IR_sparcc, matrix_IS_sparcc = create_adj_matrix(sparcc_data, "sparcc", genus_lst)
+        matrix_IR_rmcorr, matrix_IS_rmcorr = create_adj_matrix(rmcorr_data, "rmcorr", genus_lst)
+
+        graph_networkx(matrix_IR_sparcc, genus_lst, "IR_sparcc_graph")
+        graph_networkx(matrix_IS_sparcc, genus_lst, "IS_sparcc_graph")
+        graph_networkx(matrix_IR_rmcorr, genus_lst, "IR_rmcorr_graph")
+        graph_networkx(matrix_IS_rmcorr, genus_lst, "IS_rmcorr_graph")
+        graph_networkx(run_ouralg(matrix_IR_sparcc, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IR_sparcc_causal_graph")
+        graph_networkx(run_ouralg(matrix_IS_sparcc, IS.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IS_sparcc_causal_graph")
+        graph_networkx(run_ouralg(matrix_IR_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IR_rmcorr_causal_graph")
+        graph_networkx(run_ouralg(matrix_IS_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IS_rmcorr_causal_graph")
 
         # GraphicalLASSO + PC
         

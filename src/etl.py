@@ -3,6 +3,7 @@ etl.py contains functions used to merge and clean the two raw dataframes
 '''
 
 import pandas as pd
+import numpy as np
 
 
 def get_subject_data():
@@ -94,3 +95,46 @@ def IR_IS_split(df, numerical=False):
     
     return IR_df, IS_df
 
+
+def create_adj_matrix(corr_data, corr_method, genus_lst):
+    '''
+    Transforms the correlation data given in the paper into an adjacency matrix representing the correlations as edges. Returns a dataframe for IR and IS separately and in this order. 
+
+    :param: corr_data: dataframe containing the correlations of IR and IS specific cohorts, as well as their correlation values and p-values
+    :param: corr_method: string of the corr method; either "sparcc" or "rmcorr"
+    '''
+    if corr_method == "sparcc":
+        corr_IR = corr_data[corr_data["IR_rho"].notnull()]
+        corr_IR = corr_IR[corr_IR["IR_p"] <= 0.05]
+        corr_IR["genus_A"] = corr_IR["cor_char"].apply(lambda x: x.split(" vs ")[0])
+        corr_IR["genus_B"] = corr_IR["cor_char"].apply(lambda x: x.split(" vs ")[1])
+        corr_IR_subset = corr_IR[["genus_A", "genus_B"]]
+
+        corr_IS = corr_data[corr_data["IS_rho"].notnull()]
+        corr_IS = corr_IS[corr_IS["IS_p"] <= 0.05]
+        corr_IS["genus_A"] = corr_IS["cor_char"].apply(lambda x: x.split(" vs ")[0])
+        corr_IS["genus_B"] = corr_IS["cor_char"].apply(lambda x: x.split(" vs ")[1])
+        corr_IS_subset = corr_IS[["genus_A", "genus_B"]]
+
+    if corr_method == "rmcorr": 
+        corr_IR = corr_data[corr_data["IR_adj.p"] <= 0.05]
+        corr_IR["genus_A"] = corr_IR["cor_char"].apply(lambda x: x.split(" vs ")[0])
+        corr_IR["genus_B"] = corr_IR["cor_char"].apply(lambda x: x.split(" vs ")[1])
+        corr_IR_subset = corr_IR[["genus_A", "genus_B"]]
+
+        corr_IS = corr_data[corr_data["IS_adj.p"] <= 0.05]
+        corr_IS["genus_A"] = corr_IS["cor_char"].apply(lambda x: x.split(" vs ")[0])
+        corr_IS["genus_B"] = corr_IS["cor_char"].apply(lambda x: x.split(" vs ")[1])
+        corr_IS_subset = corr_IS[["genus_A", "genus_B"]]
+
+    matrix_IR = np.zeros((len(genus_lst), len(genus_lst)))
+    matrix_IS = np.zeros((len(genus_lst), len(genus_lst)))
+    
+    for i, genus_A in enumerate(genus_lst):
+      for j, genus_B in enumerate(genus_lst):
+        if any((corr_IR_subset['genus_A'] == genus_A) & (corr_IR_subset['genus_B'] == genus_B)):
+          matrix_IR[i, j] = 1
+        if any((corr_IS_subset['genus_A'] == genus_A) & (corr_IS_subset['genus_B'] == genus_B)):
+          matrix_IS[i, j] = 1
+
+    return matrix_IR, matrix_IS
