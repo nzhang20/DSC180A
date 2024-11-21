@@ -1,6 +1,6 @@
 # Causal Discovery in Gut Microbes for Type 2 Diabetes
 
-This project runs traditional causal discovery methods on gut microbes and type 2 diabetes (T2D) data to find causal structures among gut microbes and causal structures among gut microbes and T2D. Our goal is to determine how variable these causal discovery methods perform in contrast with the significant correlations found by the original study. We use PC, FCI, and GES from the `causal-learn` package, and we implement our own algorithm to address statistical power issues. We visualize our results using graphs with (TBD) and comparing graphs using classification algorithms like SVMs. 
+This project runs traditional causal discovery methods on gut microbes and type 2 diabetes (T2D) data to find causal structures among gut microbes and causal structures among gut microbes and T2D. Our goal is to determine how variable these causal discovery methods perform in contrast with the significant correlations found by the original study. We use PC, FCI, and GES from the `causal-learn` package, and we implement our own algorithm to address statistical power issues. We visualize our results using graphs with (TBD) and comparing graphs using classification algorithms like SVMs. Methods are done separately on the insulin-resistant (IR) and insulin-sensitive (IS) cohorts.
 
 ## File Descriptions
 ### Data
@@ -11,6 +11,20 @@ There are a few files of relevant raw data from the Stanford Integrated Human Mi
 - `data/raw/rmcorr.csv`: Significant correlations found using the CLR + rmcorr method (Supplementary Table 32).
 - `data/raw/sparcc.csv`: Significant correlations found using the SPARCC method (Supplementary Table 32).
 - `data/raw/subject_file.csv`: Demographic information and covariates collected on each individual including their disease status (`IR_IS_classification`)
+
+### Data Cleaning
+The clean dataset in `data/clean.csv` is created by filtering the merged `S1_Subjects`, `S3_SampleList`, and `gut_16s_abundance.txt` on subjects that had a known IRIS classification and samples that were collected at a "Healthy" visit.
+
+### EDA
+In order to use causal discovery algorithms, we need to verify that our data meet certain assumptions. Depending on whether there is linearity and Gaussianity in the data, we are limited to different algorithms. We also check the Pearson correlations between genera for the IR and IS cohorts separately. 
+
+### Causal Discovery Algorithms & Graphs
+There are (currently) four methods we are using to obtain a causal graph for each of the IR and IS cohorts. If you would like to see different implementations of each, check out the `test` folder.
+1. **Peter-Clark (PC) with (Fast) Kernel-based Conditional Independence (KCI)**. This is the most well-known/widely-used causal discovery algorithm in current literature. It is a constraint-based method.
+2. **Fast Causal Inference (FCI)**. This is a variant of PC that can handle unknown confounding variables by denoting these with double-arrowed edges. 
+3. **Greedy Equivalence Search (GES)**. This is a score-based method that iteratively adds and removes edges based on score improvement.
+4. **Our algorithm**. We test each of the correlations found in the paper with conditional independence tests on conditioning sets of size 1 and size 2. This limits the number of tests we conduct and addresses the low power issue.
+5. **GraphicalLASSO**. We reduce the number of features from 45 genera to 10, and we run methods 1-3. 
 
 ### Scripts
 Activate the virtual environment with `source venv/bin/activate` or install the dependencies with `pip install -r requirements.txt`. 
