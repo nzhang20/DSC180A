@@ -63,34 +63,34 @@ def main(targets):
         IR, IS = IR_IS_split(data, True)
         non_genera = ["Ethnicity", "Gender", "Adj.age", "BMI", "SSPG"]
 
+        # PC with genera only 
+        # run_pc(data.drop(columns=non_genera + ["IRIS"]), "pc_genera_causal_graph", indep_test=fastkci)
+        try: 
+            IR_pc = run_pc(IR.drop(columns=non_genera), "pc_IR_genera_causal_graph", indep_test=fastkci)
+            IS_pc = run_pc(IS.drop(columns=non_genera), "pc_IS_genera_causal_graph", indep_test=fastkci)
+        except ValueError:
+            IR_pc = run_pc(IR.drop(columns=non_genera), "pc_IR_genera_causal_graph", indep_test=kci)
+            IS_pc = run_pc(IS.drop(columns=non_genera), "pc_IS_genera_causal_graph", indep_test=kci)
+
+        # FCI with genera only
+        # run_fci(data.drop(columns=non_genera + ["IRIS"]), "fci_genera_causal_graph")
+        IR_fci = run_fci(IR.drop(columns=non_genera), "fci_IR_genera_causal_graph")
+        IS_fci = run_fci(IS.drop(columns=non_genera), "fci_IS_genera_causal_graph")
+
+        # GES with genera only
+        # run_ges(data.drop(columns=non_genera + ["IRIS"]), "ges_genera_causal_graph")
+        IR_ges = run_ges(IR.drop(columns=non_genera), "ges_IR_genera_causal_graph")
+        IS_ges = run_ges(IS.drop(columns=non_genera), "ges_IS_genera_causal_graph")
+
         # GES with genera + covariates
         # run_ges(data, "graphs/ges_causal_graph")
         # run_ges(IR, "graphs/ges_IR_causal_graph")
         # run_ges(IS, "graphs/ges_IS_causal_graph")
         
-        # GES with genera only
-        # run_ges(data.drop(columns=non_genera + ["IRIS"]), "ges_genera_causal_graph")
-        # run_ges(IR.drop(columns=non_genera), "ges_IR_genera_causal_graph")
-        # run_ges(IS.drop(columns=non_genera), "ges_IS_genera_causal_graph")
-        
-        # PC with genera only 
-        # run_pc(data.drop(columns=non_genera + ["IRIS"]), "pc_genera_causal_graph", indep_test=fastkci)
-        # try: 
-        #     run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=fastkci)
-        #     run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=fastkci)
-        # except ValueError:
-        #     run_pc(IR.drop(columns=non_genera), "pc_IR_causal_graph", indep_test=kci)
-        #     run_pc(IS.drop(columns=non_genera), "pc_IS_causal_graph", indep_test=kci)
-        
         # FCI with genera + covariates
         # run_fci(data, "fci_causal_graph")
         # run_fci(IR, "fci_IR_causal_graph")
         # run_fci(IS, "fci_IS_causal_graph")
-        
-        # FCI with genera only
-        # run_fci(data.drop(columns=non_genera + ["IRIS"]), "fci_genera_causal_graph")
-        # run_fci(IR.drop(columns=non_genera), "fci_IR_genera_causal_graph")
-        # run_fci(IS.drop(columns=non_genera), "fci_IS_genera_causal_graph")
 
         # our algorithm
         with open("config/data-params.json") as fh:
@@ -107,10 +107,55 @@ def main(targets):
         graph_networkx(matrix_IS_sparcc, genus_lst, "IS_sparcc_graph")
         graph_networkx(matrix_IR_rmcorr, genus_lst, "IR_rmcorr_graph")
         graph_networkx(matrix_IS_rmcorr, genus_lst, "IS_rmcorr_graph")
-        graph_networkx(run_ouralg(matrix_IR_sparcc, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IR_sparcc_causal_graph")
-        graph_networkx(run_ouralg(matrix_IS_sparcc, IS.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IS_sparcc_causal_graph")
-        graph_networkx(run_ouralg(matrix_IR_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IR_rmcorr_causal_graph")
-        graph_networkx(run_ouralg(matrix_IS_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz), genus_lst, "ouralg_IS_rmcorr_causal_graph")
+
+        IR_ouralg_sparcc = run_ouralg(matrix_IR_sparcc, IR.drop(columns=non_genera), genus_lst, fisherz)
+        IS_ouralg_sparcc = run_ouralg(matrix_IS_sparcc, IS.drop(columns=non_genera), genus_lst, fisherz)
+        IR_ouralg_rmcorr = run_ouralg(matrix_IR_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz)
+        IS_ouralg_rmcorr = run_ouralg(matrix_IS_rmcorr, IR.drop(columns=non_genera), genus_lst, fisherz)
+        
+        graph_networkx(IR_ouralg_sparcc, genus_lst, "ouralg_IR_sparcc_causal_graph")
+        graph_networkx(IS_ouralg_sparcc, genus_lst, "ouralg_IS_sparcc_causal_graph")
+        graph_networkx(IR_ouralg_rmcorr, genus_lst, "ouralg_IR_rmcorr_causal_graph")
+        graph_networkx(IS_ouralg_rmcorr, genus_lst, "ouralg_IS_rmcorr_causal_graph")
+
+        # adjacency matrix heatmaps
+        build_adjacency_matrix_heatmap_of_edges(IR_pc, IS_pc, genus_lst, "pc", "pc_heatmap")
+        build_adjacency_matrix_heatmap_of_edges(IR_fci, IS_fci, genus_lst, "fci", "fci_heatmap")
+        build_adjacency_matrix_heatmap_of_edges(IR_ges['G'], IS_ges['G'], genus_lst, "ges", "ges_heatmap")
+        build_adjacency_matrix_heatmap_of_edges(IR_ouralg_sparcc, IS_ouralg_sparcc, genus_lst, "ouralg", "ouralg_sparcc_heatmap")
+        build_adjacency_matrix_heatmap_of_edges(IR_ouralg_rmcorr, IS_ouralg_rmcorr, genus_lst, "ouralg", "ouralg_rmcorr_heatmap")
+
+        # clean up adjacency matrices for the combined frequency matrix
+        IR_sparcc_graph = np.copy(IR_ouralg_sparcc)
+        IR_sparcc_graph = np.vectorize({0:0, 2:1}.get)(IR_sparcc_graph)
+        IR_sparcc_graph += np.tril(IR_sparcc_graph.T, -1)
+        
+        IS_sparcc_graph = np.copy(IS_ouralg_sparcc)
+        IS_sparcc_graph = np.vectorize({0:0, 2:1}.get)(IS_sparcc_graph)
+        IS_sparcc_graph += np.tril(IS_sparcc_graph.T, -1)
+        
+        IR_rmcorr_graph = np.copy(IR_ouralg_rmcorr)
+        IR_rmcorr_graph = np.vectorize({0:0, 2:1}.get)(IR_rmcorr_graph)
+        IR_rmcorr_graph += np.tril(IR_rmcorr_graph.T, -1)
+        
+        IS_rmcorr_graph = np.copy(IS_ouralg_rmcorr)
+        IS_rmcorr_graph = np.vectorize({0:0, 2:1}.get)(IS_rmcorr_graph)
+        IS_rmcorr_graph += np.tril(IS_rmcorr_graph.T, -1)
+        
+        IR_adj_matrices = [nx.to_numpy_array(IR_pc.nx_graph), 
+                           np.vectorize({0:0, -1:1, 1:1, 2:1}.get)(IR_fci.graph), 
+                           np.vectorize({0:0, -1:1, 1:1}.get)(IR_ges['G'].graph), 
+                           IR_sparcc_graph, 
+                           IR_rmcorr_graph]
+        
+        IS_adj_matrices = [nx.to_numpy_array(IS_pc.nx_graph), 
+                           np.vectorize({0:0, -1:1, 1:1, 2:1}.get)(IS_fci.graph), 
+                           np.vectorize({0:0, -1:1, 1:1}.get)(IS_ges['G'].graph), 
+                           IS_sparcc_graph, 
+                           IS_rmcorr_graph]
+
+        cohort_all_alg_heatmap(IR_adj_matrices, genus_lst, "IR_combined_heatmap")
+        cohort_all_alg_heatmap(IS_adj_matrices, genus_lst, "IS_combined_heatmap")
 
         # GraphicalLASSO + PC
         
