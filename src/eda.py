@@ -17,13 +17,13 @@ def check_discrete_distribution(data):
 
     :param: data: raw subject dataset
     '''
-    fig, axs = plt.subplots(1, 2, figsize=(15, 15))
-    fig.suptitle('Distribution of Discrete Variables in Subject Info Data')
-    discrete_var = ['Ethnicity', 'Gender']
+    fig, axs = plt.subplots(2, 2, figsize=(15, 15))
+    fig.suptitle('Distribution of Discrete Variables in Subject Data', fontsize=20)
+    discrete_var = ['consented', 'Class', 'Gender', 'Ethnicity']
     groups = ['IR', 'IS', 'Unknown']
 
     if not set(discrete_var).issubset(data.columns): 
-        raise Exception("The discrete variables in the raw subject data (Study, Race, Sex) are not in the dataset provided.")
+        raise Exception("The discrete variables in the raw subject data (consented, Class, Gender, Ethnicity) are not in the dataset provided.")
 
     if 'IRIS' not in data.columns:
         raise Exception("The IRIS column is not in the dataset provided.")
@@ -35,10 +35,13 @@ def check_discrete_distribution(data):
         
         dfp = data.pivot_table(index=col, columns='IRIS', aggfunc='size')
         dfp.plot(kind='bar', rot=0, ax=axs[i])
-        axs[i].set_title(col)
-        axs[i].set_ylabel('Number of Individuals')
+        axs[i].set_title(col, fontsize=20)
+        axs[i].set_xlabel(col, fontsize=16)
+        axs[i].set_ylabel('Number of Individuals', fontsize=16)
+        axs[i].tick_params(axis="x", labelsize=12)
+        # axs[i].bar_label(axs[i].containers)
         for container in axs[i].containers:
-            axs[i].bar_label(container)
+            axs[i].bar_label(container, fontsize=12)
         
     fig.savefig("plots/subject_discrete_eda.png")
     plt.close(fig)
@@ -72,23 +75,27 @@ def check_linearity(data):
 
     :param: data: raw subject dataset
     '''
-    fig, axs = plt.subplots(1, 3, figsize=(15, 10))
-    fig.suptitle('Linearity of Continuous Variables in Subject Info Data')
-    continuous_var = ['Adj.age', 'BMI', 'SSPG']
+    fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+    fig.suptitle('Linearity of Continuous Variables in Subject Data', fontsize=20)
+    continuous_var = ['SSPG', 'FPG', 'Adj.age', 'BMI']
     pairs = list(itertools.combinations(continuous_var, 2))
     colors = {'IR': 'red', 'IS': 'green', 'Unknown': 'blue'}
 
     if not set(continuous_var).issubset(data.columns): 
-        raise Exception("The continuous variables in the raw subject data (Age, BMI, SSPG) are not in the dataset provided.")
+        raise Exception("The continuous variables in the raw subject data (Age, BMI, FPG, SSPG) are not in the dataset provided.")
 
-    for i in range(len(continuous_var)):
+    axs = axs.ravel()
+    
+    for i in range(len(pairs)):
         x = data[pairs[i][0]]
         y = data[pairs[i][1]]
         c = [colors.get(i) for i in data['IRIS']]
-        axs[i].scatter(x, y, c=c)
-        axs[i].set_xlabel(pairs[i][0])
-        axs[i].set_ylabel(pairs[i][1])
-
+        axs[i].scatter(x, y, c=c, label=c)
+        axs[i].set_xlabel(pairs[i][0], fontsize=16)
+        axs[i].set_ylabel(pairs[i][1], fontsize=16)
+    
+    markers = [plt.Line2D([0,0], [0,0], color=color, marker='o', linestyle='') for color in colors.values()]
+    fig.legend(markers, colors.keys(), numpoints=1, loc="center", bbox_to_anchor=(0.5, 0.9), ncol=3, bbox_transform=fig.transFigure, fontsize=12)
     fig.savefig("plots/subject_scatter.png")
     plt.close(fig)
 
@@ -130,17 +137,17 @@ def make_corr_plot(corr_data, fp, title="Correlation Matrix"):
     '''
     full_columns = list(corr_data.columns)
     
-    fig = plt.figure(figsize=(20, 20))
+    fig = plt.figure(figsize=(15, 15))
     ax = fig.add_subplot()
     cax = ax.matshow(corr_data, cmap="coolwarm")
-    fig.colorbar(cax)
+    fig.colorbar(cax, fraction=0.046, pad=0.04)
 
     xaxis = np.arange(len(full_columns))
-    ax.set_xticks(xaxis)
-    ax.set_yticks(xaxis)
-    ax.set_xticklabels(full_columns, rotation=90)
-    ax.set_yticklabels(full_columns)
-    ax.set_title(title)
+    ax.set_xticks(xaxis, labels=full_columns, fontsize=12)
+    ax.set_yticks(xaxis, labels=full_columns, fontsize=12)
+    ax.set_title(title, fontsize=20)
+
+    plt.setp(ax.get_xticklabels(), rotation=-60, ha="right", rotation_mode="anchor")
 
     fig.tight_layout()
     fig.savefig(f"plots/{fp}.png")
@@ -184,4 +191,19 @@ def check_linearity_large(data):
     # plt.close(fig)
 
     return
-    
+
+
+def check_gaussianity_large(data):
+    '''
+    Plots qq plots of all genera to check for Gaussianity. Saves each of them in the plots folder by their genus name. 
+
+    :param: data: clean gut abundance dataset with genera only
+    '''
+    X = data.copy()
+
+    for i in range(len(X.columns)):
+        fig, ax = plt.subplots()
+        sm.qqplot(X.iloc[:, i], line='q', ax=ax)
+        ax.set_title(X.columns[i])
+        fig.savefig(f"plots/{X.columns[i]}_qqplot.png")
+        plt.close(fig)

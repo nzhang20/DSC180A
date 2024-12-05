@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 import pydot
 import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib as mpl
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 import networkx as nx
 import graphviz
 from causallearn.search.ConstraintBased.PC import pc
@@ -215,18 +218,18 @@ def heatmap(data, row_labels, col_labels, ax=None,
 
     # Create colorbar
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
-    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom", fontsize=12)
 
     # Show all ticks and label them with the respective list entries.
-    ax.set_xticks(np.arange(data.shape[1]), labels=col_labels)
-    ax.set_yticks(np.arange(data.shape[0]), labels=row_labels)
+    ax.set_xticks(np.arange(data.shape[1]), labels=col_labels, fontsize=12)
+    ax.set_yticks(np.arange(data.shape[0]), labels=row_labels, fontsize=12)
 
     # Let the horizontal axes labeling appear on top.
     ax.tick_params(top=True, bottom=False,
                    labeltop=True, labelbottom=False)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=-45, ha="right",
+    plt.setp(ax.get_xticklabels(), rotation=-60, ha="right",
              rotation_mode="anchor")
 
     # Turn spines off and create white grid.

@@ -31,11 +31,13 @@ def main(targets):
         get_bacteria_and_covariates(merge_gut_sample_subject(), **data_params)
 
     if "eda" in targets:
+        with open("config/data-params.json") as fh:
+            data_params = json.load(fh)
+            
         # subject data eda
         subject_df = get_subject_data()
 
         check_discrete_distribution(subject_df)
-        check_gaussian_distribution(subject_df)
         check_linearity(subject_df)
 
         # clean dataset
@@ -47,14 +49,17 @@ def main(targets):
         
         # optionally check correlation differences between IR and IS groups
         IR_clean_num, IS_clean_num = IR_IS_split(clean_num, True)
-        make_corr_plot(corr(IR_clean_num), "IR_data_corr_plot")
-        make_corr_plot(corr(IS_clean_num), "IS_data_corr_plot")
+        make_corr_plot(corr(IR_clean_num), "IR_data_corr_plot", title="IR Correlation Matrix")
+        make_corr_plot(corr(IS_clean_num), "IS_data_corr_plot", title="IS Correlation Matrix")
         make_corr_plot(corr(IR_clean_num) - corr(IS_clean_num), "IR_IS_diff_corr_plot", "Difference-in-Correlation Matrix")
         
         # check linearity of all variables (includes bacteria, numerical covariates)
         check_all = input(f"Would you like to generate {len(list(itertools.combinations(clean_num.columns, 2)))} scatter plots to check for linearity in {len(clean_num.columns)} variables? (This may take a while.) \n(Y/[N]): ")
         if check_all.lower() == 'y':
             check_linearity_large(clean_num)
+
+        # check gaussianity of genera
+        check_gaussianity_large(clean_num[data_params["genus"]])
 
     
     if "graph" in targets:
