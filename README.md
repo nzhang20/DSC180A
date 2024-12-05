@@ -1,6 +1,6 @@
 # Causal Discovery in Gut Microbes for Type 2 Diabetes
 
-This project runs traditional causal discovery methods on gut microbes and type 2 diabetes (T2D) data to find causal structures among gut microbes and causal structures among gut microbes and T2D. Our goal is to determine how variable these causal discovery methods perform in contrast with the significant correlations found by the original study. We use PC, FCI, and GES from the `causal-learn` package, and we implement our own algorithm to address statistical power issues. We visualize our results using graphs with (TBD) and comparing graphs using classification algorithms like SVMs. Methods are done separately on the insulin-resistant (IR) and insulin-sensitive (IS) cohorts.
+This project runs traditional causal discovery methods on gut microbes and type 2 diabetes (T2D) data to find causal structures among gut microbes and causal structures among gut microbes and T2D. Our goal is to determine how variable these causal discovery methods perform in contrast with the significant correlations found by the original study. We use PC, FCI, and GES from the `causal-learn` package, and we implement our own algorithm to address statistical power issues. We visualize our results using graphs and adjacency matrix heatmaps and comparing graphs using frequency heatmaps. Methods are done separately on the insulin-resistant (IR) and insulin-sensitive (IS) cohorts.
 
 ## File Descriptions
 ### Data
